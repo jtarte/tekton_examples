@@ -1,0 +1,18 @@
+apiVersion: tekton.dev/v1alpha1
+kind: TaskRun
+metadata:
+  name: build-docker-image-from-git-source-task-run
+spec:
+  serviceAccountName: tekton
+  taskRef:
+    name: cicd-demo-build-with-docker
+  inputs:
+    resources:
+      - name: docker-source
+        resourceRef:
+          name: myphonebook-ui-git
+  outputs:
+    resources:
+      - name: builtImage
+        resourceRef:
+          name: myphonebookui-image

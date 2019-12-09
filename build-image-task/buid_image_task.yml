@@ -1,0 +1,44 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: cicd-demo-build-with-docker
+spec:
+  inputs:
+    resources:
+      - name: docker-source
+        type: git
+    params:
+      - name: pathToDockerFile
+        default: /workspace/docker-source/compile.Dockerfile
+      - name: pathToContext
+        default: /workspace/docker-source
+  outputs:
+    resources:
+      - name: builtImage
+        type: image
+  steps:  
+    - name: build
+      image: quay.io/buildah/stable
+      securityContext:
+        runAsUser: 0
+        privileged: true
+      env:
+        - name: REG_USER
+          valueFrom:
+            secretKeyRef:
+              name: myphonebook-tekton-secret
+              key: user 
+        - name: REG_PWD
+          valueFrom:
+            secretKeyRef:
+              name: myphonebook-tekton-secret
+              key: token
+      command:
+        - sh
+        - -c
+        - "cd ${inputs.params.pathToContext} && \
+           buildah --storage-driver=vfs build-using-dockerfile -t ${outputs.resources.builtImage.url} . && \
+           echo $REG_USER &&
+           echo $REG_PWD &&          
+           buildah --storage-driver=vfs push --tls-verify=false --creds=REG_USER:$REG_PWD docker://${outputs.resources.builtImage.url}
+          "

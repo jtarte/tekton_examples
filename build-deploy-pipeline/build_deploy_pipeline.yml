@@ -1,0 +1,72 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: build-deploy-pipeline
+spec:
+  resources:
+    - name: docker-source
+      type: git
+    - name: builtImage
+      type: image
+  params:
+    - name: pathToContext
+      description: The path to the build context, used by Kaniko - within the workspace
+      default: src
+    - name: targetNamespace
+      description: the name of target namespace where the deployment is done 
+      default: phonebook
+  tasks:
+  - name: build-image
+    taskRef:
+      name: build-image
+    params:
+      - name: pathToContext
+        value: "${params.pathToContext}"
+    resources:
+      inputs:
+        - name: docker-source
+          resource: docker-source
+        - name: builtImage
+          resource: builtImage
+  - name: deploy-cm-to-cluster
+    taskRef:
+      name: deploy-cm
+    runAfter:
+      - build-image
+    params:
+      - name: pathToContext
+        value: "${params.pathToContext}"
+      - name: targetNamespace
+        value: "${params.targetNamespace}"
+    resources:
+      inputs:
+        - name: docker-source
+          resource: docker-source
+  - name: deploy-app-to-cluster
+    taskRef:
+      name: deploy-app
+    runAfter:
+      - deploy-cm-to-cluster
+    params:
+      - name: pathToContext
+        value: "${params.pathToContext}"
+      - name: targetNamespace
+        value: "${params.targetNamespace}"
+    resources:
+      inputs:
+        - name: docker-source
+          resource: docker-source
+  - name: expose-app-to-cluster
+    taskRef:
+      name: expose-app
+    runAfter:
+      - deploy-app-to-cluster
+    params:
+      - name: pathToContext
+        value: "${params.pathToContext}"
+      - name: targetNamespace
+        value: "${params.targetNamespace}"
+    resources:
+      inputs:
+        - name: docker-source
+          resource: docker-source

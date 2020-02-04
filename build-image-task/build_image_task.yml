@@ -8,15 +8,13 @@ spec:
       - name: docker-source
         type: git
     params:
-      - name: pathToDockerFile
-        default: /workspace/docker-source/compile.Dockerfile
       - name: pathToContext
         default: /workspace/docker-source
   outputs:
     resources:
       - name: builtImage
         type: image
-  steps:  
+  steps:
     - name: build
       image: quay.io/buildah/stable
       securityContext:
@@ -27,7 +25,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: myphonebook-tekton-image-secret
-              key: user 
+              key: user
         - name: REG_PWD
           valueFrom:
             secretKeyRef:
@@ -37,6 +35,6 @@ spec:
         - sh
         - -c
         - "cd ${inputs.params.pathToContext} && \
-           buildah --storage-driver=vfs build-using-dockerfile -t ${outputs.resources.builtImage.url} . && \        
+           buildah --storage-driver=vfs build-using-dockerfile -t ${outputs.resources.builtImage.url} . && \
            buildah --storage-driver=vfs push --tls-verify=false --creds=REG_USER:$REG_PWD docker://${outputs.resources.builtImage.url}
           "

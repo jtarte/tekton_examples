@@ -1,18 +1,18 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: deploy-app
+  name: ui-deploy-app
 spec:
   inputs:
     resources:
-      - name: docker-source
+      - name: source
         type: git
-      - name: image-container
+      - name: image
         type: image
     params:
       - name: pathToContext
         type: string
-        default: /workspace/docker-source
+        default: /workspace/source
       - name: targetNamespace
         type: string
         default: phonebook
@@ -23,7 +23,7 @@ spec:
       args:
         - "-i"
         - "-e"
-        - "s;docker-registry.default.svc:5000/phonebook/myphonebook_ui:0.4;$(inputs.resources.image-container.url);g"
+        - "s;docker-registry.default.svc:5000/phonebook/myphonebook_ui:0.4;$(inputs.resources.image.url);g"
         - "$(inputs.params.pathToContext)/kubernetes/ui_dep.yml"
     - name: oc-dep
       image: quay.io/openshift/origin-cli:latest

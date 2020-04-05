@@ -3,17 +3,15 @@ kind: PipelineRun
 metadata:
   name: deploy-pipeline-run
 spec:
-  params:
-  - name: pathToContext
-    value: /workspace/docker-source
-  - name: targetNamespace
-    value: myphonebook
   pipelineRef:
     name: deploy-pipeline
   resources:
-  - name: docker-source
-    resourceRef:
-      name: myphonebook-ui-git
-  - name: builtImage
-    resourceRef:
-      name: myphonebookui-image
+    - name: docker-source
+      resourceRef:
+        name: myphonebook-ui-git
+    - name: image-container
+      resourceRef:
+        name: myphonebookui-image
+  params:
+    - name: targetNamespace
+      value: myphonebook

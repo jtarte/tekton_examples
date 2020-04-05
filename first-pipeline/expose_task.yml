@@ -25,7 +25,7 @@ spec:
               key: token
       command: ["/bin/bash", "-c"]
       args:
-        - oc apply -f ${inputs.params.pathToContext}/kubernetes/ui_svc.yml --token=$REG_PWD -n ${inputs.params.targetNamespace}
+        - oc apply -f $(inputs.params.pathToContext)/kubernetes/ui_svc.yml --token=$REG_PWD -n $(inputs.params.targetNamespace)
     - name: oc-route
       image: quay.io/openshift/origin-cli:latest
       env:
@@ -36,4 +36,4 @@ spec:
               key: token
       command: ["/bin/bash", "-c"]
       args:
-        - oc expose service phonebookui --token=$REG_PWD -n ${inputs.params.targetNamespace}
+        - oc expose service phonebookui --token=$REG_PWD -n $(inputs.params.targetNamespace)

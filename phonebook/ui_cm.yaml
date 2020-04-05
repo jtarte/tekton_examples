@@ -4,19 +4,21 @@ metadata:
   name: ui-deploy-cm
 spec:
   inputs:
-    resources:
-      - name: docker-source
-        type: git
     params:
       - name: pathToContext
         type: string
-        default: /workspace/docker-source
+        default: /workspace/source
+      - name: ARGS
+        description: The OpenShift CLI arguments to run
+        type: array
+        default:
+        - ./kubernetes/ui_cm.yml
       - name: targetNamespace
         type: string
         default: phonebook
-      - name: apiURL
-        type: string
-        default: phonebookapi-myphonebook.apps.jtocp42a.ocp.csplab.local
+    resources:
+    - name: source
+      type: git
   steps:
     - name: update-yaml
       image: alpine
@@ -24,9 +26,9 @@ spec:
       args:
         - "-i"
         - "-e"
-        - "s;phonebookapi-phonebook.apps.172.16.249.200.nip.io;$(inputs.params.apiURL);g"
+        - "s;phonebookapi-phonebook.apps.172.16.249.200.nip.io;phonebookapi-myphonebook.apps.jtocp42a.ocp.csplab.local;g"
         - "$(inputs.params.pathToContext)/kubernetes/ui_cm.yml"
-    - name: oc-cm
+    - name: oc-configmap
       image: quay.io/openshift/origin-cli:latest
       env:
         - name: REG_PWD

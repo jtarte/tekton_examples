@@ -6,24 +6,24 @@ spec:
   resources:
     - name: docker-source
       type: git
-    - name: builtImage
+    - name: image-container
       type: image
   params:
     - name: pathToContext
-      description: The path to the build context, used by Kaniko - within the workspace
-      default: src
+      description: The path to the build context
+      default: /workspace/docker-source
     - name: targetNamespace
       description: the name of target namespace where the deployment is done 
       default: phonebook
   tasks:
   - name: deploy-cm-to-cluster
     taskRef:
-      name: deploy-cm
+      name: ui-deploy-cm
     params:
       - name: pathToContext
-        value: "${params.pathToContext}"
+        value: "$(params.pathToContext)"
       - name: targetNamespace
-        value: "${params.targetNamespace}"
+        value: "$(params.targetNamespace)"
     resources:
       inputs:
         - name: docker-source
@@ -35,13 +35,15 @@ spec:
       - deploy-cm-to-cluster
     params:
       - name: pathToContext
-        value: "${params.pathToContext}"
+        value: "$(params.pathToContext)"
       - name: targetNamespace
-        value: "${params.targetNamespace}"
+        value: "$(params.targetNamespace)"
     resources:
       inputs:
         - name: docker-source
           resource: docker-source
+        - name: image-container
+          resource: image-container
   - name: expose-app-to-cluster
     taskRef:
       name: expose-app
@@ -49,9 +51,9 @@ spec:
       - deploy-app-to-cluster
     params:
       - name: pathToContext
-        value: "${params.pathToContext}"
+        value: "$(params.pathToContext)"
       - name: targetNamespace
-        value: "${params.targetNamespace}"
+        value: "$(params.targetNamespace)"
     resources:
       inputs:
         - name: docker-source

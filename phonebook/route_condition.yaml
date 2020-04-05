@@ -1,0 +1,11 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Condition
+metadata:
+  name: verify-route-not-exist
+spec:
+  params:
+    - name: routeCreation
+      type: string
+  check:
+    image: alpine
+    script: 'test $(params.routeCreation) = "true" '

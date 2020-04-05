@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
 metadata:
-  name: myphonebookui-image
+  name: myphonebook-ui-image
 spec:
   type: image
   params:

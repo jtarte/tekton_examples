@@ -1,0 +1,82 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: ui-build-deploy-pipeline
+spec:
+  resources:
+    - name: source
+      type: git
+    - name: image
+      type: image
+  params:
+    - name: targetNamespace
+      description: the name of target namespace where the deployment is done 
+      default: phonebook
+    - name: routeCreation
+      description: specify if a route should be created
+      default: "false"
+  tasks:
+  - name: build-image
+    taskRef:
+      name: buildah
+    resources:
+      inputs:
+        - name: source
+          resource: source
+        - name: image
+          resource: image
+  - name: deploy-cm-to-cluster
+    taskRef:
+      name: ui-deploy-cm
+    runAfter:
+      - build-image
+    params:
+      - name: targetNamespace
+        value: "$(params.targetNamespace)"
+    resources:
+      inputs:
+        - name: source
+          resource: source
+  - name: deploy-app-to-cluster
+    taskRef:
+      name: ui-deploy-app
+    runAfter:
+      - deploy-cm-to-cluster
+    params:
+      - name: targetNamespace
+        value: "$(params.targetNamespace)"  
+    resources:
+      inputs:
+        - name: source
+          resource: source
+        - name: image
+          resource: image
+  - name: expose-app-to-cluster
+    taskRef:
+      name: expose-app
+    runAfter:
+      - deploy-app-to-cluster
+    params:
+      - name: targetNamespace
+        value: "$(params.targetNamespace)"
+      - name: script 
+        value: kubernetes/ui_svc.yml
+    resources:
+      inputs:
+        - name: source
+          resource: source
+  - name: route-creation
+    taskRef:
+      name: route-creation
+    conditions:
+      - conditionRef: verify-route-not-exist
+        params:
+          - name: routeCreation
+            value: "$(params.routeCreation)"
+    runAfter:
+      - expose-app-to-cluster
+    params:
+      - name: targetNamespace
+        value: "$(params.targetNamespace)"
+      - name: serviceName 
+        value: phonebookui

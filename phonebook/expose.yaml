@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: expose-app
+spec:
+  inputs:
+    resources:
+      - name: source
+        type: git
+    params:
+      - name: pathToContext
+        type: string
+        default: /workspace/source
+      - name: targetNamespace
+        type: string
+        default: phonebook
+      - name: script 
+        type: string
+        default: kubernetes/ui_svc.yml  
+  steps:
+    - name: oc-service
+      image: quay.io/openshift/origin-cli:latest
+      env:
+        - name: REG_PWD
+          valueFrom:
+            secretKeyRef:
+              name: myphonebook-tekton-deployer-secret
+              key: token
+      command: ["/bin/bash", "-c"]
+      args:
+        - oc apply -f $(inputs.params.pathToContext)/$(inputs.params.script) --token=$REG_PWD -n $(inputs.params.targetNamespace)

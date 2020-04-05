@@ -34,7 +34,7 @@ spec:
       command:
         - sh
         - -c
-        - "cd ${inputs.params.pathToContext} && \
-           buildah --storage-driver=vfs build-using-dockerfile -t ${outputs.resources.builtImage.url} . && \
-           buildah --storage-driver=vfs push --tls-verify=false --creds=REG_USER:$REG_PWD docker://${outputs.resources.builtImage.url}
+        - "cd $(inputs.params.pathToContext) && \
+           buildah --storage-driver=vfs build-using-dockerfile -t $(outputs.resources.builtImage.url) . && \
+           buildah --storage-driver=vfs push --tls-verify=false --creds=REG_USER:$REG_PWD docker://$(outputs.resources.builtImage.url)
           "

@@ -1,0 +1,11 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: myphonebook-api-git
+spec:
+  type: git
+  params:
+    - name: revision
+      value: master
+    - name: url
+      value: http://github.com/jtarte/myphonebook_api.git 

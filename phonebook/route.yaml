@@ -1,0 +1,25 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: route-creation
+spec:
+  inputs:
+    params:
+      - name: targetNamespace
+        type: string
+        default: phonebook
+      - name: serviceName
+        type: string
+        default: phonebookui  
+  steps:
+     - name: oc-route
+       image: quay.io/openshift/origin-cli:latest
+       env:
+         - name: REG_PWD
+           valueFrom:
+             secretKeyRef:
+               name: myphonebook-tekton-deployer-secret
+               key: token
+       command: ["/bin/bash", "-c"]
+       args:
+         - oc expose service $(inputs.params.serviceName) --token=$REG_PWD -n $(inputs.params.targetNamespace)

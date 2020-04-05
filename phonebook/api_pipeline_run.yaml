@@ -1,0 +1,20 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineRun
+metadata:
+  creationTimestamp: null
+  generateName: api-build-deploy-pr-
+spec:
+  pipelineRef:
+    name: api-build-deploy-pipeline
+  params:
+  - name: targetNamespace
+    value: myphonebook
+  - name: routeCreation
+    value: "false"
+  resources:
+  - name: source
+    resourceRef:
+      name: myphonebook-api-git
+  - name: image
+    resourceRef:
+      name: myphonebook-api-image

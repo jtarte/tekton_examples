@@ -1,0 +1,36 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: deploy-cm-secret
+spec:
+  inputs:
+    params:
+      - name: pathToContext
+        type: string
+        default: /workspace/source
+      - name: ARGS
+        description: The OpenShift CLI arguments to run
+        type: array
+        default:
+        - ./kubernetes/ui_cm.yml
+      - name: targetNamespace
+        type: string
+        default: phonebook
+      - name: script 
+        type: string
+        default: kubernetes/ui_cm.yml 
+    resources:
+    - name: source
+      type: git
+  steps:
+    - name: oc-apply-config
+      image: quay.io/openshift/origin-cli:latest
+      env:
+        - name: REG_PWD
+          valueFrom:
+            secretKeyRef:
+              name: myphonebook-tekton-deployer-secret
+              key: token
+      command: ["/bin/bash", "-c"]
+      args:
+        - oc apply -f $(inputs.params.pathToContext)/$(inputs.params.script) --token=$REG_PWD -n $(inputs.params.targetNamespace)
